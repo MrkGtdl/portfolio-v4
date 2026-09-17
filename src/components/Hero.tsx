@@ -5,18 +5,18 @@ import IntroScene from "./IntroScene";
 import ParticleCanvas from "./ParticleCanvas";
 import HeroText from "./HeroText";
 
-const TOTAL_CHAPTERS = 4;
+const TOTAL_CHAPTERS = 5;
 
 /*
- * Chapter positions
+ * Chapter mapping
  *
- * INTRO = 0
- * 01    = 1
- * 02    = 2
- * 03    = 3
- * 04    = 5
+ * 0 = INTRO
+ * 1 = 01
+ * 2 = 02
+ * 3 = 03
+ * 4 = 04
  */
-const CHAPTER_PROGRESS = [1, 2, 3, 5];
+const CHAPTER_PROGRESS = [0, 1, 2, 3, 4];
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -44,10 +44,6 @@ export default function Hero() {
 
       currentProgressRef.current = next;
 
-      /*
-       * Safety guard
-       * Prevent NaN from entering React state.
-       */
       const safeNext = Number.isFinite(next) ? next : 0;
 
       setProgress(safeNext);
@@ -79,41 +75,52 @@ export default function Hero() {
 
       let nextChapter = currentChapter;
 
+      /*
+       * DOWN
+       */
       if (event.key === "ArrowDown") {
         nextChapter = Math.min(currentChapter + 1, TOTAL_CHAPTERS - 1);
       }
 
+      /*
+       * UP
+       */
       if (event.key === "ArrowUp") {
-        /*
-         * From INTRO, go back to the
-         * very beginning of the particle intro.
-         */
-        if (currentChapter === 0) {
-          targetProgressRef.current = 0;
-          currentProgressRef.current = 0;
-
-          setProgress(0);
-
-          return;
-        }
-
         nextChapter = Math.max(currentChapter - 1, 0);
       }
 
-      const nextProgress =
-        nextChapter === 0 ? 0 : CHAPTER_PROGRESS[nextChapter];
-
       /*
-       * Safety guard.
+       * Already at boundary.
        */
+      if (nextChapter === currentChapter) {
+        if (currentChapter === 0 && event.key === "ArrowUp") {
+          targetProgressRef.current = 0;
+          currentProgressRef.current = 0;
+          setProgress(0);
+        }
+
+        return;
+      }
+
+      const nextProgress = CHAPTER_PROGRESS[nextChapter];
+
       if (!Number.isFinite(nextProgress)) {
         return;
       }
 
+      /*
+       * IMPORTANT:
+       *
+       * Update chapter immediately.
+       * This prevents the text from lagging
+       * behind the arrow navigation.
+       */
       chapterRef.current = nextChapter;
-
       setChapter(nextChapter);
 
+      /*
+       * Smoothly move progress.
+       */
       targetProgressRef.current = nextProgress;
     };
 
@@ -140,13 +147,22 @@ export default function Hero() {
 
       const scrolled = Math.max(0, -rect.top);
 
-      const rawValue = scrollDistance > 0 ? (scrolled / scrollDistance) * 3 : 0;
-
       /*
-       * Safety guard.
+       * IMPORTANT:
+       *
+       * 500vh section gives us
+       * 4 chapter intervals.
+       *
+       * 0 → INTRO
+       * 1 → 01
+       * 2 → 02
+       * 3 → 03
+       * 4 → 04
        */
+      const rawValue = scrollDistance > 0 ? (scrolled / scrollDistance) * 4 : 0;
+
       const value = Number.isFinite(rawValue)
-        ? Math.min(Math.max(rawValue, 0), 3)
+        ? Math.min(Math.max(rawValue, 0), 4)
         : 0;
 
       targetProgressRef.current = value;
@@ -155,22 +171,29 @@ export default function Hero() {
        * ============================
        * CHAPTER DETECTION
        * ============================
+       *
+       * Each chapter occupies
+       * roughly one progress unit.
        */
       let nextChapter = 0;
 
-      if (value >= 2.5) {
+      if (value >= 3.5) {
+        nextChapter = 4;
+      } else if (value >= 2.5) {
         nextChapter = 3;
       } else if (value >= 1.5) {
         nextChapter = 2;
-      } else if (value >= 1) {
+      } else if (value >= 0.5) {
         nextChapter = 1;
       } else {
         nextChapter = 0;
       }
 
-      chapterRef.current = nextChapter;
+      if (nextChapter !== chapterRef.current) {
+        chapterRef.current = nextChapter;
 
-      setChapter(nextChapter);
+        setChapter(nextChapter);
+      }
     };
 
     window.addEventListener("scroll", handleScroll, {
@@ -183,6 +206,7 @@ export default function Hero() {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+
       window.removeEventListener("resize", handleScroll);
     };
   }, []);
@@ -199,7 +223,7 @@ export default function Hero() {
    * INTRO
    * ============================
    */
-  const introProgress = Math.min(Math.max(safeProgress / 1, 0), 1);
+  const introProgress = Math.min(Math.max(safeProgress, 0), 1);
 
   const introOpacity =
     safeProgress < 0.65 ? 1 : Math.max(0, 1 - (safeProgress - 0.65) / 0.35);
@@ -221,6 +245,8 @@ export default function Hero() {
         {/* DEBUG */}
         <div className="absolute left-6 top-6 z-[999] text-xl text-white">
           {safeProgress.toFixed(2)}
+          {" / "}
+          CHAPTER {chapter}
         </div>
 
         {/* =====================================

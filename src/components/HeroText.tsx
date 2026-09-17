@@ -37,7 +37,25 @@ const chapters = [
 ];
 
 export default function HeroText({ progress, chapter }: HeroTextProps) {
-  const current = chapters[chapter] ?? chapters[0];
+  /*
+   * Chapter 0 = INTRO PARTICLE
+   *
+   * Text chapters start at chapter 1.
+   *
+   * chapter 1 → chapters[0] → 01
+   * chapter 2 → chapters[1] → 02
+   * chapter 3 → chapters[2] → 03
+   * chapter 4 → chapters[3] → 04
+   */
+  if (chapter === 0) {
+    return null;
+  }
+
+  const current = chapters[chapter - 1];
+
+  if (!current) {
+    return null;
+  }
 
   const isLeft = current.side === "left";
 
@@ -107,7 +125,7 @@ export default function HeroText({ progress, chapter }: HeroTextProps) {
         `}
       >
         <span className="text-[9px] tracking-[0.3em] text-white/40">
-          0{chapter + 1}
+          0{chapter}
         </span>
 
         <div className="h-px w-12 bg-white/20" />

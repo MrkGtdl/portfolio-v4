@@ -135,12 +135,13 @@ function ParticleModel({ progress = 0 }) {
     const positions = new Float32Array(targets.length * 3);
 
     const randomPositions = new Float32Array(targets.length * 3);
+    const introPositions = new Float32Array(targets.length * 3);
 
     const colors = new Float32Array(targets.length * 3);
 
-    const scatterX = 18;
-    const scatterY = 12;
-    const scatterZ = 8;
+    const scatterX = 28;
+    const scatterY = 20;
+    const scatterZ = 14;
 
     targets.forEach((point, i) => {
       const i3 = i * 3;
@@ -154,6 +155,13 @@ function ParticleModel({ progress = 0 }) {
       randomPositions[i3 + 1] = (Math.random() - 0.5) * scatterY;
 
       randomPositions[i3 + 2] = (Math.random() - 0.5) * scatterZ;
+
+      // Completely independent intro cloud
+      introPositions[i3] = (Math.random() - 0.5) * 32;
+
+      introPositions[i3 + 1] = (Math.random() - 0.5) * 22;
+
+      introPositions[i3 + 2] = (Math.random() - 0.5) * 16;
 
       colors[i3] = targetColors[i].r;
       colors[i3 + 1] = targetColors[i].g;
@@ -181,6 +189,7 @@ function ParticleModel({ progress = 0 }) {
     return {
       positions,
       randomPositions,
+      introPositions,
       colors,
       ambientPositions,
       count: targets.length,
@@ -260,38 +269,55 @@ function ParticleModel({ progress = 0 }) {
     // const introOffsetX = introMoveEase * 1.2;
     const introOffsetX = 0;
 
-    const movementStrength = 1 - formationProgress;
+    const introScatterStrength = THREE.MathUtils.clamp(
+      (0.9 - progress) / 0.55,
+      0,
+      1,
+    );
+
+    const movementStrength = Math.max(
+      1 - formationProgress,
+      introScatterStrength,
+    );
 
     for (let i = 0; i < particleData.count; i++) {
       const i3 = i * 3;
 
+      const introChaos = THREE.MathUtils.clamp((0.9 - progress) / 0.9, 0, 1);
+
+      const targetInfluence = THREE.MathUtils.clamp(
+        (progress - 1.15) / 0.25,
+        0,
+        1,
+      );
+
       const baseX = THREE.MathUtils.lerp(
-        particleData.randomPositions[i3],
+        particleData.introPositions[i3],
         particleData.positions[i3],
-        formationProgress,
+        targetInfluence,
       );
 
       const baseY = THREE.MathUtils.lerp(
-        particleData.randomPositions[i3 + 1],
+        particleData.introPositions[i3 + 1],
         particleData.positions[i3 + 1],
-        formationProgress,
+        targetInfluence,
       );
 
       const baseZ = THREE.MathUtils.lerp(
-        particleData.randomPositions[i3 + 2],
+        particleData.introPositions[i3 + 2],
         particleData.positions[i3 + 2],
-        formationProgress,
+        targetInfluence,
       );
 
       const offset = i * 0.013;
 
-      const floatX = Math.sin(time * 1.2 + offset) * 0.12 * movementStrength;
+      const floatX = Math.sin(time * 1.2 + offset) * 0.35 * movementStrength;
 
       const floatY =
-        Math.cos(time * 0.9 + offset * 1.7) * 0.1 * movementStrength;
+        Math.cos(time * 0.9 + offset * 1.7) * 0.28 * movementStrength;
 
       const floatZ =
-        Math.sin(time * 0.7 + offset * 2.3) * 0.08 * movementStrength;
+        Math.sin(time * 0.7 + offset * 2.3) * 0.22 * movementStrength;
 
       positions[i3] = baseX + floatX + introOffsetX;
 
@@ -303,12 +329,48 @@ function ParticleModel({ progress = 0 }) {
     // ---------------------------------------
     // CHAPTER ROTATION
     // ---------------------------------------
+    //
+    // Progress:
+    // 0 = INTRO
+    // 1 = CHAPTER 01
+    // 2 = CHAPTER 02
+    // 3 = CHAPTER 03
+    // 4 = CHAPTER 04
+    //
+    // We deliberately DON'T rotate the model
+    // continuously with progress anymore.
+    //
+    // Chapter 04 must end FRONT-FACING.
+    // ---------------------------------------
 
-    const rotationProgress = THREE.MathUtils.clamp(progress, 0, 3);
+    const chapterRotationProgress = THREE.MathUtils.clamp(progress, 0, 4);
 
-    const baseRotation = rotationProgress * Math.PI * 2;
+    const easeInOut = (t) => t * t * (3 - 2 * t);
 
-    // Extra rotation during the intro shrink
+    let baseRotation = 0;
+
+    if (chapterRotationProgress < 1) {
+      const t = easeInOut(chapterRotationProgress);
+
+      baseRotation = THREE.MathUtils.lerp(0, Math.PI * 0.75, t);
+    } else if (chapterRotationProgress < 2) {
+      const t = easeInOut(chapterRotationProgress - 1);
+
+      baseRotation = THREE.MathUtils.lerp(Math.PI * 0.75, Math.PI * 1.25, t);
+    } else if (chapterRotationProgress < 3) {
+      const t = easeInOut(chapterRotationProgress - 2);
+
+      baseRotation = THREE.MathUtils.lerp(Math.PI * 1.25, Math.PI * 1.75, t);
+    } else {
+      const t = easeInOut(chapterRotationProgress - 3);
+
+      baseRotation = THREE.MathUtils.lerp(Math.PI * 1.75, Math.PI * 2, t);
+    }
+
+    // ---------------------------------------
+    // EXTRA INTRO ROTATION
+    // ---------------------------------------
+
     const introRotationProgress = THREE.MathUtils.clamp(
       (progress - 0.08) / 0.42,
       0,
@@ -322,7 +384,11 @@ function ParticleModel({ progress = 0 }) {
 
     const introRotation = introRotationEase * Math.PI * 0.75;
 
-    const rotation = baseRotation + introRotation;
+    // ---------------------------------------
+    // FINAL ROTATION
+    // ---------------------------------------
+
+    const rotation = progress < 0.5 ? -introRotation : baseRotation;
 
     if (modelGroupRef.current) {
       modelGroupRef.current.rotation.set(0, rotation, 0);
@@ -330,10 +396,6 @@ function ParticleModel({ progress = 0 }) {
 
     if (solidGroupRef.current) {
       solidGroupRef.current.rotation.set(0, rotation, 0);
-    }
-
-    if (solidGroupRef.current) {
-      solidGroupRef.current.visible = progress >= 1.8;
     }
 
     // =========================
@@ -359,7 +421,7 @@ function ParticleModel({ progress = 0 }) {
     //
 
     const particleRevealProgress = THREE.MathUtils.clamp(
-      (progress - 0.32) / 0.38,
+      (progress - 0.42) / 0.38,
       0,
       1,
     );
@@ -377,8 +439,18 @@ function ParticleModel({ progress = 0 }) {
     // solid GLB takes over.
     //
 
-    pointsRef.current.material.opacity =
-      1.0 * particleRevealEase * (1 - solidEase);
+    const introParticleOpacity = THREE.MathUtils.clamp(
+      (progress - 0.62) / 0.28,
+      0,
+      1,
+    );
+
+    const introParticleEase =
+      introParticleOpacity *
+      introParticleOpacity *
+      (3 - 2 * introParticleOpacity);
+
+    pointsRef.current.material.opacity = introParticleEase * (1 - solidEase);
 
     const particleSize = THREE.MathUtils.lerp(
       0.018,
