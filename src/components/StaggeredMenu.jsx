@@ -1,6 +1,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import "./StaggeredMenu.css";
+import ChromaGrid from "./ChromaGrid";
 
 export const StaggeredMenu = ({
   position = "right",
@@ -437,18 +438,48 @@ export const StaggeredMenu = ({
     };
   }, [closeOnClickAway, open, closeMenu]);
 
-  const menuImages = {
-    Home: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?auto=format&fit=crop&w=1200&q=80",
-
-    About:
+const chromaItems = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1558655146-9f40138edfeb?auto=format&fit=crop&w=1200&q=80",
+    title: "Home",
+    subtitle: "Welcome",
+    handle: "@home",
+    borderColor: "#111111",
+    gradient: "linear-gradient(145deg, #111111, #000)",
+    url: "#home",
+  },
+  {
+    image:
       "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=80",
-
-    Work: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80",
-
-    Contact:
+    title: "About",
+    subtitle: "About Me",
+    handle: "@about",
+    borderColor: "#111111",
+    gradient: "linear-gradient(145deg, #222222, #000)",
+    url: "#about",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80",
+    title: "Work",
+    subtitle: "Selected Projects",
+    handle: "@work",
+    borderColor: "#111111",
+    gradient: "linear-gradient(145deg, #333333, #000)",
+    url: "#work",
+  },
+  {
+    image:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80",
-  };
-
+    title: "Contact",
+    subtitle: "Get In Touch",
+    handle: "@contact",
+    borderColor: "#111111",
+    gradient: "linear-gradient(145deg, #444444, #000)",
+    url: "#contact",
+  },
+];
   return (
     <div
       className={
@@ -528,10 +559,16 @@ export const StaggeredMenu = ({
         aria-hidden={!open}
       >
         <div className="sm-panel-inner">
-          <div className="sm-menu-image-preview" aria-hidden="true">
-            {hoveredItem && menuImages[hoveredItem] && (
-              <img key={hoveredItem} src={menuImages[hoveredItem]} alt="" />
-            )}
+          <div className="sm-menu-image-preview">
+            <ChromaGrid
+              items={chromaItems}
+              columns={2}
+              rows={2}
+              radius={100}
+              damping={0.45}
+              fadeOut={0.6}
+              ease="power3.out"
+            />
           </div>
           <ul
             className="sm-panel-list"
@@ -548,6 +585,7 @@ export const StaggeredMenu = ({
                     href={it.link}
                     aria-label={it.ariaLabel}
                     data-index={idx + 1}
+                    data-image={it.imageIndex}
                     onMouseEnter={() => setHoveredItem(it.label)}
                     onMouseLeave={() => setHoveredItem(null)}
                   >

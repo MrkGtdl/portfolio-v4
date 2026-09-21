@@ -7,21 +7,25 @@ const menuItems = [
     label: "Home",
     ariaLabel: "Go to home section",
     link: "#home",
+    imageIndex: 0,
   },
   {
     label: "About",
     ariaLabel: "Go to about section",
     link: "#about",
+    imageIndex: 1,
   },
   {
     label: "Work",
     ariaLabel: "Go to work section",
     link: "#work",
+    imageIndex: 2,
   },
   {
     label: "Contact",
     ariaLabel: "Go to contact section",
     link: "#contact",
+    imageIndex: 3,
   },
 ];
 

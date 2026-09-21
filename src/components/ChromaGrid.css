@@ -1,0 +1,272 @@
+/* =========================================================
+   GRID
+========================================================= */
+
+.chroma-grid {
+  --r: 300px;
+
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+
+  overflow: hidden;
+
+  isolation: isolate;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.chroma-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+  border-radius: 0;
+
+  background: #111;
+  cursor: pointer;
+  isolation: isolate;
+
+  --mouse-x: -9999px;
+  --mouse-y: -9999px;
+  --chroma-radius: 300px;
+  --chroma-active: 0;
+}
+
+
+/* =========================================================
+   IMAGE WRAPPER
+========================================================= */
+
+.chroma-img-wrapper {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
+
+.chroma-img {
+  position: absolute;
+
+  inset: 0;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  pointer-events: none;
+
+  user-select: none;
+}
+
+
+/* =========================================================
+   BASE IMAGE
+   ALWAYS GRAYSCALE
+========================================================= */
+
+.chroma-img-base {
+  z-index: 1;
+
+  filter: grayscale(1) brightness(0.65);
+
+  transform: scale(1);
+
+  transition: transform 0.5s ease;
+}
+
+
+/* =========================================================
+   COLOR IMAGE
+   HIDDEN BY DEFAULT
+========================================================= */
+
+.chroma-img-color {
+  z-index: 2;
+
+  filter: none;
+
+  -webkit-mask-image: radial-gradient(
+    circle var(--chroma-radius) at var(--mouse-x) var(--mouse-y),
+    #000 0%,
+    #000 15%,
+    rgba(0, 0, 0, 0.95) 30%,
+    rgba(0, 0, 0, 0.8) 45%,
+    rgba(0, 0, 0, 0.6) 60%,
+    rgba(0, 0, 0, 0.35) 75%,
+    rgba(0, 0, 0, 0.12) 88%,
+    transparent 100%
+  );
+
+  mask-image: radial-gradient(
+    circle var(--chroma-radius) at var(--mouse-x) var(--mouse-y),
+    #000 0%,
+    #000 15%,
+    rgba(0, 0, 0, 0.95) 30%,
+    rgba(0, 0, 0, 0.8) 45%,
+    rgba(0, 0, 0, 0.6) 60%,
+    rgba(0, 0, 0, 0.35) 75%,
+    rgba(0, 0, 0, 0.12) 88%,
+    transparent 100%
+  );
+
+  opacity: var(--chroma-active);
+
+  transform: scale(1);
+
+  transition:
+    opacity 0.15s ease,
+    transform 0.5s ease;
+}
+
+.chroma-card:hover .chroma-img-base {
+  transform: scale(1.04);
+}
+
+.chroma-card:hover .chroma-img-color {
+  transform: scale(1.04);
+}
+
+/* =========================================================
+   IMAGE ZOOM
+========================================================= */
+
+
+/* =========================================================
+   CARD LIGHT
+========================================================= */
+
+.chroma-card-shine {
+  position: absolute;
+  inset: 0;
+
+  z-index: 3;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle 180px at var(--mouse-x) var(--mouse-y),
+      var(--card-border),
+      transparent 70%
+    );
+
+  opacity: calc(var(--chroma-active) * 0.12);
+
+  mix-blend-mode: screen;
+}
+
+
+/* =========================================================
+   INFO
+========================================================= */
+
+.chroma-info {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  padding: 20px;
+
+  z-index: 5;
+
+  pointer-events: none;
+}
+
+.chroma-info .name {
+  margin: 0;
+
+  color: #fff;
+
+  font-size: 1rem;
+
+  font-weight: 600;
+}
+
+.chroma-info .handle {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #aaa;
+
+  font-size: 0.8rem;
+}
+
+.chroma-info .role {
+  margin: 4px 0 0;
+
+  color: #aaa;
+
+  font-size: 0.8rem;
+}
+
+.chroma-info .location {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #aaa;
+
+  font-size: 0.75rem;
+}
+
+
+/* =========================================================
+   KEEP 2x2
+========================================================= */
+
+@media (max-width: 1124px) {
+  .chroma-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .chroma-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    border-radius: 18px;
+  }
+
+  .chroma-card {
+    border-radius: 9px;
+  }
+
+  .chroma-info {
+    padding: 12px;
+  }
+}
