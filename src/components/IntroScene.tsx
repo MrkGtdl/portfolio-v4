@@ -200,7 +200,7 @@ export default function IntroScene({ progress }: IntroSceneProps) {
                   hover:text-white
                 "
               >
-                See My Work
+                Explore
               </button>
             </div>
           </div>
