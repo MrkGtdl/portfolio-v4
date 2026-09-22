@@ -45,10 +45,17 @@ export default function ChromaGrid({
   radius = 300,
   columns = 2,
   rows = 2,
+  activeIndex = null,
 }) {
   const rootRef = useRef(null);
   const cardsRef = useRef([]);
   const activeCardRef = useRef(null);
+
+  /*
+   * GSAP controls .chroma-motion
+   * Menu hover controls .chroma-card
+   */
+  const motionRef = useRef([]);
 
   const data = items?.length ? items : demo;
 
@@ -58,108 +65,92 @@ export default function ChromaGrid({
    * --------------------------------
    */
 
-  const motionRef = useRef([]);
+useEffect(() => {
+  if (!rootRef.current) return;
 
-  useEffect(() => {
-    if (!rootRef.current) return;
+  const cards = cardsRef.current;
 
-    const cards = cardsRef.current.filter(Boolean);
+  motionRef.current = cards.map((card) => {
+    if (!card) return null;
 
-    motionRef.current = cards.map((card) => ({
-      x: gsap.quickTo(card, "x", {
+    return {
+      x: gsap.quickTo(card, "--gsap-x", {
         duration: 0.8,
         ease: "power3.out",
       }),
 
-      y: gsap.quickTo(card, "y", {
+      y: gsap.quickTo(card, "--gsap-y", {
         duration: 0.9,
         ease: "power3.out",
       }),
-    }));
-
-    return () => {
-      gsap.killTweensOf(cards);
     };
-  }, [data.length]);
+  });
 
-  const handleGridMotion = (e) => {
-    const root = rootRef.current;
+  return () => {
+    cards.forEach((card) => {
+      if (!card) return;
 
-    if (!root) return;
-
-    const rect = root.getBoundingClientRect();
-
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    /*
-     * Convert mouse position to -1 → 1.
-     *
-     * X:
-     * left  = -1
-     * center = 0
-     * right = 1
-     *
-     * Y:
-     * top    = -1
-     * center = 0
-     * bottom = 1
-     */
-    const normalizedX =
-      (mouseX / rect.width) * 2 - 1;
-
-    const normalizedY =
-      (mouseY / rect.height) * 2 - 1;
-
-    /*
-     * Limit the movement.
-     */
-    const maxX = 10;
-    const maxY = 80;
-
-    const xMovement = normalizedX * maxX;
-    const yMovement = normalizedY * maxY;
-
-    /*
-     * 2x2 grid:
-     *
-     * [ 0 ] [ 1 ]
-     * [ 2 ] [ 3 ]
-     *
-     * Top row and bottom row
-     * move in opposite directions.
-     */
-
-    const movements = [
-      {
-        x: 0,
-        y: yMovement,
-      },
-      {
-        x: 0,
-        y: -yMovement,
-      },
-      {
-        x: 0,
-        y: yMovement,
-      },
-      {
-        x: 0,
-        y: -yMovement,
-      },
-    ];
-
-    motionRef.current.forEach((motion, index) => {
-      if (!motion) return;
-
-      const movement = movements[index];
-
-      if (!movement) return;
-
-      motion.x(movement.x);
-      motion.y(movement.y);
+      gsap.killTweensOf(card);
     });
   };
+}, [data.length]);
+
+const handleGridMotion = (e) => {
+  const root = rootRef.current;
+
+  if (!root) return;
+
+  const rect = root.getBoundingClientRect();
+
+  const mouseY = e.clientY - rect.top;
+
+  const normalizedY =
+    (mouseY / rect.height) * 2 - 1;
+
+  const maxY = 80;
+
+  const yMovement = normalizedY * maxY;
+
+  /*
+   * 2x2
+   *
+   * [ 0 ] [ 1 ]
+   * [ 2 ] [ 3 ]
+   *
+   * LEFT  = same direction
+   * RIGHT = opposite direction
+   */
+
+  const movements = [
+    {
+      x: 0,
+      y: yMovement,
+    },
+    {
+      x: 0,
+      y: -yMovement,
+    },
+    {
+      x: 0,
+      y: yMovement,
+    },
+    {
+      x: 0,
+      y: -yMovement,
+    },
+  ];
+
+  motionRef.current.forEach((motion, index) => {
+    if (!motion) return;
+
+    const movement = movements[index];
+
+    if (!movement) return;
+
+    motion.x(`${movement.x}px`);
+    motion.y(`${movement.y}px`);
+  });
+};
 
   const resetGridMotion = () => {
     motionRef.current.forEach((motion) => {
@@ -172,13 +163,19 @@ export default function ChromaGrid({
 
   /*
    * --------------------------------
-   * CHROMA HOVER
+   * CARD REFS
    * --------------------------------
    */
 
   const setCardRef = (el, index) => {
     cardsRef.current[index] = el;
   };
+
+  /*
+   * --------------------------------
+   * CHROMA HOVER
+   * --------------------------------
+   */
 
   const activateCard = (card, clientX, clientY) => {
     if (!card) return;
@@ -189,8 +186,7 @@ export default function ChromaGrid({
     const y = clientY - rect.top;
 
     /*
-     * If a different card becomes active,
-     * completely disable the previous one.
+     * Disable previous card.
      */
     if (activeCardRef.current !== card) {
       cardsRef.current.forEach((item) => {
@@ -229,7 +225,7 @@ export default function ChromaGrid({
     handleGridMotion(e);
 
     /*
-     * Existing chroma behavior
+     * Chroma reveal
      */
     const activeCard = activeCardRef.current;
 
@@ -246,10 +242,10 @@ export default function ChromaGrid({
 
   const handleCardLeave = () => {
     /*
-     * DON'T deactivate here.
+     * Do not deactivate here.
      *
-     * This allows the chroma to continue
-     * while the pointer is crossing the gap.
+     * This keeps the reveal active
+     * while crossing the gap.
      */
   };
 
@@ -285,44 +281,49 @@ export default function ChromaGrid({
       onPointerLeave={handleGridLeave}
     >
       {data.map((item, index) => (
-<article
-  key={`${item.title}-${index}`}
-  ref={(el) => setCardRef(el, index)}
-  className="chroma-card"
-  onPointerEnter={handleCardEnter}
-  onPointerMove={handleCardMove}
-  onPointerLeave={handleCardLeave}
-  style={{
-    "--card-border": item.borderColor || "transparent",
-    "--card-gradient":
-      item.gradient || "linear-gradient(145deg, #111, #000)",
-  }}
->
-  {/* FIXED CLIPPING CONTAINER */}
-  <div className="chroma-clip">
-    {/* ONLY THIS MOVES */}
-    <div className="chroma-motion">
-      <div className="chroma-img-wrapper">
-        <img
-          className="chroma-img chroma-img-base"
-          src={item.image}
-          alt={item.title}
-          loading="lazy"
-        />
+        <article
+          key={`${item.title}-${index}`}
+          ref={(el) => setCardRef(el, index)}
+          className={`chroma-card ${
+            activeIndex === null
+              ? ""
+              : index === activeIndex
+                ? "menu-active"
+                : "menu-inactive"
+          }`}
+          onPointerEnter={handleCardEnter}
+          onPointerMove={handleCardMove}
+          onPointerLeave={handleCardLeave}
+          style={{
+            "--card-border": item.borderColor || "transparent",
+            "--card-gradient":
+              item.gradient ||
+              "linear-gradient(145deg, #111, #000)",
+          }}
+        >
+          <div className="chroma-clip">
+            <div className="chroma-motion">
+              <div className="chroma-img-wrapper">
+                <img
+                  className="chroma-img chroma-img-base"
+                  src={item.image}
+                  alt={item.title}
+                  loading="lazy"
+                />
 
-        <img
-          className="chroma-img chroma-img-color"
-          src={item.image}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-        />
-      </div>
+                <img
+                  className="chroma-img chroma-img-color"
+                  src={item.image}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                />
+              </div>
 
-      <div className="chroma-card-shine" />
-    </div>
-  </div>
-</article>
+              <div className="chroma-card-shine" />
+            </div>
+          </div>
+        </article>
       ))}
     </div>
   );

@@ -568,6 +568,11 @@ const chromaItems = [
               damping={0.45}
               fadeOut={0.6}
               ease="power3.out"
+              activeIndex={
+                hoveredItem
+                  ? items.findIndex((item) => item.label === hoveredItem)
+                  : null
+              }
             />
           </div>
           <ul

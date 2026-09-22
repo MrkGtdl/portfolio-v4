@@ -25,8 +25,6 @@
   isolation: isolate;
 }
 
-
-
 /* =========================================================
    CARD
 ========================================================= */
@@ -42,7 +40,7 @@
 
   overflow: hidden;
 
-  border-radius: 0;
+  border-radius: 18px;
 
   background: #111;
 
@@ -54,11 +52,44 @@
   --mouse-y: -9999px;
   --chroma-radius: 300px;
   --chroma-active: 0;
+
+  --gsap-x: 0px;
+  --gsap-y: 0px;
+  --menu-y: 0px;
+
+  transform:
+    translate3d(
+      var(--gsap-x),
+      calc(var(--gsap-y) + var(--menu-y)),
+      0
+    )
+    scale(1);
+
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chroma-card.menu-active {
+  --menu-y: -35px;
+
+  z-index: 10;
+
+  transform:
+    translate3d(
+      var(--gsap-x),
+      calc(var(--gsap-y) + var(--menu-y)),
+      0
+    )
+    scale(1.04);
+}
+
+.chroma-card.menu-inactive {
+  z-index: 1;
 }
 
 /* =========================================================
-   FIXED CLIPPING LAYER
-   NEVER MOVES
+   CLIPPING CONTAINER
+   This is the layer that lifts on menu hover
 ========================================================= */
 
 .chroma-clip {
@@ -73,21 +104,50 @@
 
   border-radius: inherit;
 
-  isolation: isolate;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* =========================================================
+   MENU HOVER
+========================================================= */
+
+.chroma-card.menu-active {
+  transform: translateY(-35px) scale(1.04);
+  z-index: 10;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Other images become blurred */
+.chroma-card.menu-inactive .chroma-img-wrapper {
+  filter: blur(5px) brightness(0.75);
+
+  transition:
+    filter 0.45s ease;
+}
+
+/* Active image stays clear */
+.chroma-card.menu-active .chroma-img-wrapper {
+  filter: none;
+
+  transition:
+    filter 0.45s ease;
+}
+
+/* Normal state */
+.chroma-card:not(.menu-active):not(.menu-inactive)
+  .chroma-img-wrapper {
+  filter: none;
 }
 
 /* =========================================================
    MOVING CONTENT
+   ONLY GSAP CONTROLS THIS
 ========================================================= */
 
 .chroma-motion {
   position: absolute;
 
-  /*
-   * IMPORTANT:
-   * Oversized so image can move up/down
-   * without exposing empty space.
-   */
   top: -60px;
   right: 0;
   bottom: -60px;
@@ -96,11 +156,8 @@
   width: 100%;
   height: auto;
 
-  will-change: transform;
-
   transform: translate3d(0, 0, 0);
 }
-
 
 /* =========================================================
    IMAGE WRAPPER
@@ -137,7 +194,6 @@
   user-select: none;
 }
 
-
 /* =========================================================
    BASE IMAGE
    ALWAYS GRAYSCALE
@@ -152,9 +208,27 @@
 }
 
 
+/* MENU HOVER - active image becomes full color */
+.chroma-card.menu-active .chroma-img-base {
+  filter: grayscale(0) brightness(1);
+}
+
+/* MENU HOVER - inactive images stay grayscale */
+.chroma-card.menu-inactive .chroma-img-base {
+  filter: grayscale(1) blur(5px) brightness(0.65);
+}
+
+.chroma-card.menu-active .chroma-img-color {
+  opacity: 0;
+}
+
+.chroma-card.menu-inactive .chroma-img-color {
+  opacity: 0;
+}
+
 /* =========================================================
    COLOR IMAGE
-   HIDDEN BY DEFAULT
+   REVEALED BY MOUSE
 ========================================================= */
 
 .chroma-img-color {
@@ -191,6 +265,9 @@
   transform: scale(1.04);
 }
 
+/* =========================================================
+   IMAGE HOVER
+========================================================= */
 
 .chroma-card:hover .chroma-img-base {
   transform: scale(1.04);
@@ -199,11 +276,6 @@
 .chroma-card:hover .chroma-img-color {
   transform: scale(1.04);
 }
-
-/* =========================================================
-   IMAGE ZOOM
-========================================================= */
-
 
 /* =========================================================
    CARD LIGHT
@@ -229,7 +301,6 @@
 
   mix-blend-mode: screen;
 }
-
 
 /* =========================================================
    INFO
@@ -287,6 +358,15 @@
   font-size: 0.75rem;
 }
 
+.chroma-gsap {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  will-change: transform;
+}
 
 /* =========================================================
    KEEP 2x2

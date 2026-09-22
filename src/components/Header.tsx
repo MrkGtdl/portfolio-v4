@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import StaggeredMenu from "./StaggeredMenu";
 
 const menuItems = [
@@ -41,6 +42,8 @@ const socialItems = [
 ];
 
 export default function Header() {
+  const [hoveredImage, setHoveredImage] = useState<number | null>(null);
+
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none">
       <div className="pointer-events-auto">
@@ -55,6 +58,7 @@ export default function Header() {
           changeMenuColorOnOpen
           colors={["#ffffff", "#e5e5e5"]}
           accentColor="#111111"
+          onItemHover={setHoveredImage}
         />
       </div>
     </div>
