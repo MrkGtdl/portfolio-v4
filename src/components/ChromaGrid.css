@@ -18,7 +18,7 @@
 
   gap: 12px;
 
-  overflow: hidden;
+  overflow: visible;
 
   border-radius: var(--grid-radius);
 
@@ -53,30 +53,63 @@
   --chroma-radius: 300px;
   --chroma-active: 0;
 
+  
   --gsap-x: 0px;
   --gsap-y: 0px;
+
+  --menu-x: 0px;
   --menu-y: 0px;
 
   transform:
     translate3d(
-      var(--gsap-x),
+      calc(var(--gsap-x) + var(--menu-x)),
       calc(var(--gsap-y) + var(--menu-y)),
       0
     )
     scale(1);
 
   transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chroma-card.menu-inactive {
+  z-index: 1;
+}
+
+/* =========================================================
+   MENU HOVER POSITION
+========================================================= */
+
+/* TOP LEFT */
+.chroma-card:nth-child(1).menu-active {
+  --menu-x: 25px;
+  --menu-y: -35px;
+}
+
+/* TOP RIGHT */
+.chroma-card:nth-child(2).menu-active {
+  --menu-x: -25px;
+  --menu-y: -35px;
+}
+
+/* BOTTOM LEFT */
+.chroma-card:nth-child(3).menu-active {
+  --menu-x: 25px;
+  --menu-y: -35px;
+}
+
+/* BOTTOM RIGHT */
+.chroma-card:nth-child(4).menu-active {
+  --menu-x: -25px;
+  --menu-y: -35px;
 }
 
 .chroma-card.menu-active {
-  --menu-y: -35px;
-
   z-index: 10;
 
   transform:
     translate3d(
-      var(--gsap-x),
+      calc(var(--gsap-x) + var(--menu-x)),
       calc(var(--gsap-y) + var(--menu-y)),
       0
     )
@@ -104,19 +137,11 @@
 
   border-radius: inherit;
 
-  transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* =========================================================
    MENU HOVER
 ========================================================= */
-
-.chroma-card.menu-active {
-  transform: translateY(-35px) scale(1.04);
-  z-index: 10;
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
 
 /* Other images become blurred */
 .chroma-card.menu-inactive .chroma-img-wrapper {
@@ -208,12 +233,10 @@
 }
 
 
-/* MENU HOVER - active image becomes full color */
 .chroma-card.menu-active .chroma-img-base {
-  filter: grayscale(0) brightness(1);
+  filter: grayscale(0) blur(0) brightness(1);
 }
 
-/* MENU HOVER - inactive images stay grayscale */
 .chroma-card.menu-inactive .chroma-img-base {
   filter: grayscale(1) blur(5px) brightness(0.65);
 }
@@ -366,6 +389,24 @@
   height: 100%;
 
   will-change: transform;
+}
+
+/* =========================================================
+   SMOOTH MENU ITEM TRANSITION
+========================================================= */
+
+.chroma-img-base,
+.chroma-img-color {
+  transition:
+    filter 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chroma-card {
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* =========================================================

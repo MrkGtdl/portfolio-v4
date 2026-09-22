@@ -240,14 +240,16 @@
 .sm-menu-image-preview {
   position: absolute;
 
-  left: 3vw;
+  left: 4vw;
   top: 50%;
+
+  width: min(45vw, 760px);
+  height: min(78vh, 760px);
+
   transform: translateY(-50%);
 
-  width: min(48vw, 850px);
-  height: min(82vh, 820px);
+  overflow: visible;
 
-  overflow: hidden;
   border-radius: 24px;
 
   pointer-events: auto;
@@ -403,31 +405,26 @@
 
 .staggered-menu-panel .sm-panel-item {
   position: relative;
-
   display: inline-flex;
+  align-items: center;
 
   padding: 0.15em 0;
 
   color: #000;
-
   font-weight: 600;
   font-size: 3.5rem;
-
   line-height: 1;
-
   letter-spacing: -2px;
 
   text-transform: uppercase;
-
   text-decoration: none;
 
   cursor: pointer;
-
   overflow: visible;
 
   transition:
-    color 0.25s ease,
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 
@@ -436,6 +433,8 @@
    ========================================= */
 
 .staggered-menu-panel .sm-panel-itemLabel {
+  position: relative;
+
   display: inline-block;
 
   will-change: transform;
@@ -445,8 +444,8 @@
   transform: translate3d(0, 0, 0) scale(1);
 
   transition:
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    letter-spacing 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    letter-spacing 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 
@@ -461,10 +460,43 @@
 .staggered-menu-panel .sm-panel-item:hover
   .sm-panel-itemLabel {
   transform:
-    translate3d(-12px, 0, 0)
-    scale(1.025);
+    translate3d(-18px, 0, 0)
+    scale(1.045);
 
   letter-spacing: -0.02em;
+}
+
+/* =========================================
+   ARROW
+   ========================================= */
+
+.staggered-menu-panel .sm-panel-item::before {
+  content: "→";
+
+  position: absolute;
+
+  left: -42px;
+  top: 50%;
+
+  font-size: 1.4rem;
+  font-weight: 400;
+
+  opacity: 0;
+  transform:
+    translate3d(12px, -50%, 0)
+    scale(0.8);
+
+  transition:
+    opacity 0.35s ease,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.staggered-menu-panel .sm-panel-item:hover::before {
+  opacity: 1;
+
+  transform:
+    translate3d(0, -50%, 0)
+    scale(1);
 }
 
 
@@ -478,7 +510,7 @@
   position: absolute;
 
   left: 0;
-  bottom: -4px;
+  bottom: -5px;
 
   width: 100%;
   height: 2px;
@@ -486,17 +518,35 @@
   background: currentColor;
 
   transform: scaleX(0);
-
   transform-origin: right center;
 
   transition:
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .staggered-menu-panel .sm-panel-item:hover::after {
   transform: scaleX(1);
 
   transform-origin: left center;
+}
+
+/* =========================================
+   DIM OTHER MENU ITEMS
+   ========================================= */
+
+.staggered-menu-panel .sm-panel-list:has(.sm-panel-item:hover)
+  .sm-panel-item:not(:hover) {
+  opacity: 0.25;
+  transform: scale(0.97);
+
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.staggered-menu-panel .sm-panel-list
+  .sm-panel-item {
+  opacity: 1;
 }
 
 
@@ -772,7 +822,7 @@
 
   transform: translateY(-50%);
 
-  overflow: hidden;
+  overflow: visible;
   border-radius: 24px;
 
   pointer-events: auto;
