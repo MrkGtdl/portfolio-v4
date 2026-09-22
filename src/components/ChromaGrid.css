@@ -4,6 +4,7 @@
 
 .chroma-grid {
   --r: 300px;
+  --grid-radius: 18px;
 
   position: relative;
 
@@ -19,8 +20,11 @@
 
   overflow: hidden;
 
+  border-radius: var(--grid-radius);
+
   isolation: isolate;
 }
+
 
 
 /* =========================================================
@@ -29,22 +33,72 @@
 
 .chroma-card {
   position: relative;
+
   width: 100%;
   height: 100%;
+
   min-width: 0;
   min-height: 0;
 
   overflow: hidden;
+
   border-radius: 0;
 
   background: #111;
+
   cursor: pointer;
+
   isolation: isolate;
 
   --mouse-x: -9999px;
   --mouse-y: -9999px;
   --chroma-radius: 300px;
   --chroma-active: 0;
+}
+
+/* =========================================================
+   FIXED CLIPPING LAYER
+   NEVER MOVES
+========================================================= */
+
+.chroma-clip {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+
+  border-radius: inherit;
+
+  isolation: isolate;
+}
+
+/* =========================================================
+   MOVING CONTENT
+========================================================= */
+
+.chroma-motion {
+  position: absolute;
+
+  /*
+   * IMPORTANT:
+   * Oversized so image can move up/down
+   * without exposing empty space.
+   */
+  top: -60px;
+  right: 0;
+  bottom: -60px;
+  left: 0;
+
+  width: 100%;
+  height: auto;
+
+  will-change: transform;
+
+  transform: translate3d(0, 0, 0);
 }
 
 
@@ -54,7 +108,6 @@
 
 .chroma-img-wrapper {
   position: absolute;
-
   inset: 0;
 
   width: 100%;
@@ -62,7 +115,6 @@
 
   overflow: hidden;
 }
-
 
 /* =========================================================
    IMAGE
@@ -96,9 +148,7 @@
 
   filter: grayscale(1) brightness(0.65);
 
-  transform: scale(1);
-
-  transition: transform 0.5s ease;
+  transform: scale(1.04);
 }
 
 
@@ -138,12 +188,9 @@
 
   opacity: var(--chroma-active);
 
-  transform: scale(1);
-
-  transition:
-    opacity 0.15s ease,
-    transform 0.5s ease;
+  transform: scale(1.04);
 }
+
 
 .chroma-card:hover .chroma-img-base {
   transform: scale(1.04);
@@ -164,9 +211,11 @@
 
 .chroma-card-shine {
   position: absolute;
+
   inset: 0;
 
   z-index: 3;
+
   pointer-events: none;
 
   background:
@@ -263,7 +312,7 @@
   }
 
   .chroma-card {
-    border-radius: 9px;
+    border-radius: 0;
   }
 
   .chroma-info {
